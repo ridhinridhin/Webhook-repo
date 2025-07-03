@@ -1,4 +1,4 @@
-print("🚀 Starting Flask server...")
+print(" Starting Flask server...")
 
 
 
@@ -35,6 +35,21 @@ def webhook():
             'to_branch': data['pull_request']['base']['ref'],
             'timestamp': data['pull_request']['created_at']
         }
+        # Detect PR merged
+    elif event_type == 'pull_request' and data['action'] == 'closed' and data['pull_request']['merged']:
+        author = data['pull_request']['user']['login']
+        source_branch = data['pull_request']['head']['ref']
+        target_branch = data['pull_request']['base']['ref']
+        merged_at = data['pull_request']['merged_at']
+
+        event = {
+            'type': 'merge',
+            'message': f"{author} merged branch {source_branch} into {target_branch}",
+            'timestamp': merged_at
+        }
+        insert_event(event)
+        return jsonify({'status': 'Merge event recorded'}), 200
+
 
     if payload:
         insert_event(payload)
