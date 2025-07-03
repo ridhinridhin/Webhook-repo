@@ -1,6 +1,4 @@
-print(" Starting Flask server...")
-
-
+print("🚀 Starting Flask server...")
 
 from flask import Flask, request, jsonify, render_template
 from database import insert_event, get_all_events
@@ -28,32 +26,32 @@ def webhook():
         }
 
     elif event_type == 'pull_request':
-        payload = {
-            'type': 'pull_request',
-            'author': data['pull_request']['user']['login'],
-            'from_branch': data['pull_request']['head']['ref'],
-            'to_branch': data['pull_request']['base']['ref'],
-            'timestamp': data['pull_request']['created_at']
-        }
-        # Detect PR merged
-    elif event_type == 'pull_request' and data['action'] == 'closed' and data['pull_request']['merged']:
-        author = data['pull_request']['user']['login']
-        source_branch = data['pull_request']['head']['ref']
-        target_branch = data['pull_request']['base']['ref']
-        merged_at = data['pull_request']['merged_at']
+        if data['action'] == 'closed' and data['pull_request']['merged']:
+            author = data['pull_request']['user']['login']
+            source_branch = data['pull_request']['head']['ref']
+            target_branch = data['pull_request']['base']['ref']
+            merged_at = data['pull_request']['merged_at']
 
-        event = {
-            'type': 'merge',
-            'message': f"{author} merged branch {source_branch} into {target_branch}",
-            'timestamp': merged_at
-        }
-        insert_event(event)
-        return jsonify({'status': 'Merge event recorded'}), 200
-
+            event = {
+                'type': 'merge',
+                'message': f"{author} merged branch {source_branch} into {target_branch}",
+                'timestamp': merged_at
+            }
+            insert_event(event)
+            return jsonify({'status': 'Merge event recorded'}), 200
+        else:
+            payload = {
+                'type': 'pull_request',
+                'author': data['pull_request']['user']['login'],
+                'from_branch': data['pull_request']['head']['ref'],
+                'to_branch': data['pull_request']['base']['ref'],
+                'timestamp': data['pull_request']['created_at']
+            }
 
     if payload:
         insert_event(payload)
         return jsonify({"status": "received"}), 200
+
     return jsonify({"status": "ignored"}), 200
 
 @app.route('/api/events')
