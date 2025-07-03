@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>GitHub Webhook Events</title>
+    <meta http-equiv="refresh" content="15">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <h2>GitHub Activity Feed</h2>
+    <ul>
+        {% for event in events %}
+        <li>
+            {% if event.type == "push" %}
+            {{ event.author }} pushed to {{ event.to_branch }} on {{ event.timestamp }}
+            {% elif event.type == "pull_request" %}
+            {{ event.author }} submitted a pull request from {{ event.from_branch }} to {{ event.to_branch }} on {{
+            event.timestamp }}
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+
+</html>
